@@ -1,4 +1,14 @@
 # drawer
+## p5.js
+```
+グローバルモードで使う
+https://github.com/processing/p5.js/wiki/Global-and-instance-mode
+```
+```
+参考
+Experiment with p5.js and Vue
+https://medium.com/js-dojo/experiment-with-p5-js-on-vue-7ebc05030d33
+```
 
 > My rad Nuxt.js project
 
