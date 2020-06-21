@@ -1,28 +1,17 @@
-var app = require('express')();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const port = process.env.PORT || 3000;
 
-// app.get('/', (req, res) => {
-//   res.send('<h1>Hello world</h1>');
-// });
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
+app.use(express.static(__dirname + '/public'));
 
-io.on('connection', (socket) => {
-  console.log('ユーザーが参加しました');
+function onConnection(socket) {
+  socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
+}
 
-  socket.on('disconnect', () => {
-    console.log('ユーザーが退場しました');
-  });
-  
-  socket.on('chat message', (msg) => {
-    console.log(msg);
-    io.emit('chat message', msg);
-  });
-});
+io.on('connection', onConnection);
 
-http.listen(3000, () => {
-  console.log('listening on *:3000');
-});
+
+http.listen(port, () => console.log('listening on port ' + port));

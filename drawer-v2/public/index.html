@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.IO whiteboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+  <div id="app">
+    <canvas class="whiteboard"></canvas>
+    
+    <div class="colors">
+      <div class="color black"></div>
+      <div class="color red"></div>
+      <div class="color green"></div>
+      <div class="color blue"></div>
+      <div class="color yellow"></div>
+    </div>
+  </div>
+  
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <!-- <script src="/main.js"></script> -->
+
+  <script>
+    var socket = io()
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        canvas: '',
+        colors: '',
+        context: '',
+        current: '',
+        drawing: false,
+        line_width: 10
+      },
+      mounted() {
+        this.canvas = document.getElementsByClassName('whiteboard')[0]
+        this.context = this.canvas.getContext('2d')
+        // this.context = this.$el.getContext('2d')
+        this.colors = document.getElementsByClassName('color')
+        this.current = {
+          color: 'black'
+        }
+        this.drawing = false
+
+
+        this.canvas.addEventListener('mousedown', this.onMouseDown, false)
+        this.canvas.addEventListener('mouseup', this.onMouseUp, false)
+        this.canvas.addEventListener('mouseout', this.onMouseUp, false)
+        this.canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 5), false)
+
+        //Touch support for mobile devices
+        this.canvas.addEventListener('touchstart', this.onMouseDown, false)
+        this.canvas.addEventListener('touchend', this.onMouseUp, false)
+        this.canvas.addEventListener('touchcancel', this.onMouseUp, false)
+        this.canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 5), false)
+
+        for (var i = 0; i < this.colors.length; i++) {
+          this.colors[i].addEventListener('click', this.onColorUpdate, false)
+        }
+
+        socket.on('drawing', this.onDrawingEvent)
+
+        window.addEventListener('resize', this.onResize, false)
+        this.onResize()
+      },
+      methods: {
+        drawLine(x0, y0, x1, y1, color, emit) {
+          this.context.beginPath()
+          this.context.moveTo(x0, y0)
+          this.context.lineTo(x1, y1)
+          // this.context.globalAlpha = 0.5
+          // this.context.strokeStyle = color
+
+          this.context.strokeStyle = 'rgba(0, 0, 255, 0.2)'
+          // this.context.fillStyle = 'rgba(0, 0, 255, 0.2)'
+
+          this.context.lineCap = 'round'
+          this.context.lineJoin = 'round'
+
+          // this.context.lineCap = 'butt'
+          // this.context.lineJoin = 'round'
+          
+          this.context.lineWidth = this.line_width
+          this.context.stroke()
+          this.context.closePath()
+
+          if (!emit) { return }
+          var w = this.canvas.width
+          var h = this.canvas.height
+
+          socket.emit('drawing', {
+            x0: x0 / w,
+            y0: y0 / h,
+            x1: x1 / w,
+            y1: y1 / h,
+            color: color
+          })
+        },
+        onMouseDown(e) {
+          this.drawing = true
+          this.current.x = e.clientX || e.touches[0].clientX
+          this.current.y = e.clientY || e.touches[0].clientY
+        },
+        onMouseUp(e) {
+          if (!this.drawing) { return }
+          this.drawing = false
+          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color, true)
+        },
+        onMouseMove(e) {
+          if (!this.drawing) { return }
+          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color, true)
+          this.current.x = e.clientX || e.touches[0].clientX
+          this.current.y = e.clientY || e.touches[0].clientY
+        },
+        onColorUpdate(e) {
+          console.log(e.target.className)
+          this.current.color = e.target.className.split(' ')[1]
+        },
+        throttle(callback, delay) {
+          var previousCall = new Date().getTime()
+          return function () {
+            var time = new Date().getTime()
+
+            if ((time - previousCall) >= delay) {
+              previousCall = time
+              callback.apply(null, arguments)
+            }
+          }
+        },
+        onDrawingEvent(data) {
+          var w = this.canvas.width
+          var h = this.canvas.height
+          this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color)
+        },
+        onResize() {
+          this.canvas.width = window.innerWidth
+          this.canvas.height = window.innerHeight
+        }
+      }
+    })
+  </script>
+</body>
+</html>
