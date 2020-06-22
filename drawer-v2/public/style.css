@@ -27,6 +27,12 @@ html, body {
   border: 1px solid #000;
 }
 
+.tool-list {
+  position: absolute;
+  right: 10px;
+  bottom: 10px
+}
+
 .colors {
   position: fixed;
 }

@@ -18,6 +18,16 @@
       <div class="color blue"></div>
       <div class="color yellow"></div>
     </div>
+
+    <div class="tool-list">
+      <input type="range" name="width" min="3" max="30" v-model="line_width">
+      <button @click="tool(1)">ペン</button>
+      <button @click="tool(2)">消しゴム</button>
+      <button @click="deleteCanvas()">消去</button>
+      <button @click="changeLineWidth(3)">細</button>
+      <button @click="changeLineWidth(12)">中</button>
+      <button @click="changeLineWidth(24)">太</button>
+    </div>
   </div>
   
 
@@ -36,7 +46,7 @@
         context: '',
         current: '',
         drawing: false,
-        line_width: 10
+        line_width: 9
       },
       mounted() {
         this.canvas = document.getElementsByClassName('whiteboard')[0]
@@ -52,13 +62,13 @@
         this.canvas.addEventListener('mousedown', this.onMouseDown, false)
         this.canvas.addEventListener('mouseup', this.onMouseUp, false)
         this.canvas.addEventListener('mouseout', this.onMouseUp, false)
-        this.canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 5), false)
+        this.canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 0), false)
 
         //Touch support for mobile devices
         this.canvas.addEventListener('touchstart', this.onMouseDown, false)
         this.canvas.addEventListener('touchend', this.onMouseUp, false)
         this.canvas.addEventListener('touchcancel', this.onMouseUp, false)
-        this.canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 5), false)
+        this.canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 0), false)
 
         for (var i = 0; i < this.colors.length; i++) {
           this.colors[i].addEventListener('click', this.onColorUpdate, false)
@@ -71,9 +81,6 @@
       },
       methods: {
         drawLine(x0, y0, x1, y1, color, emit) {
-          this.context.beginPath()
-          this.context.moveTo(x0, y0)
-          this.context.lineTo(x1, y1)
           // this.context.globalAlpha = 0.5
           // this.context.strokeStyle = color
 
@@ -82,11 +89,12 @@
 
           this.context.lineCap = 'round'
           this.context.lineJoin = 'round'
-
-          // this.context.lineCap = 'butt'
-          // this.context.lineJoin = 'round'
           
           this.context.lineWidth = this.line_width
+
+          this.context.beginPath()
+          this.context.moveTo(x0, y0)
+          this.context.lineTo(x1, y1)
           this.context.stroke()
           this.context.closePath()
 
@@ -141,6 +149,28 @@
         onResize() {
           this.canvas.width = window.innerWidth
           this.canvas.height = window.innerHeight
+        },
+        tool(btnNum) {
+          // クリックされボタンが鉛筆だったら
+          if (btnNum == 1) {
+            this.context.globalCompositeOperation = 'source-over'
+          }
+          // クリックされボタンが消しゴムだったら
+          else if (btnNum == 2) {
+            this.context.strokeStyle = 'rgba(0, 0, 0, 1.0)'
+            this.context.globalCompositeOperation = 'destination-out'
+          }
+        },
+        deleteCanvas() {
+          this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
+          // confirm = confirm('canvasの内容を削除しますか？');
+          // // アラートで「OK」を選んだ時
+          // if (confirm === true) {
+          //   this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
+          // }
+        },
+        changeLineWidth(width) {
+          this.line_width = width
         }
       }
     })
