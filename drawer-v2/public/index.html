@@ -10,23 +10,26 @@
 <body>
   <div id="app">
     <canvas class="whiteboard"></canvas>
-    
-    <div class="colors">
-      <div class="color black"></div>
-      <div class="color red"></div>
-      <div class="color green"></div>
-      <div class="color blue"></div>
-      <div class="color yellow"></div>
-    </div>
 
     <div class="tool-list">
-      <input type="range" name="width" min="3" max="30" v-model="line_width">
-      <button @click="tool(1)">ペン</button>
-      <button @click="tool(2)">消しゴム</button>
-      <button @click="deleteCanvas()">消去</button>
       <button @click="changeLineWidth(3)">細</button>
       <button @click="changeLineWidth(12)">中</button>
       <button @click="changeLineWidth(24)">太</button>
+      <!-- <input type="range" name="width" min="3" max="30" v-model="line_width"> -->
+
+      <button @click="tool(1)">ペン</button>
+      <button @click="tool(2)">マーカー</button>
+      <button @click="tool(3)">消しゴム</button>
+
+      <button @click="deleteCanvas()">消去</button>
+      
+      <button @click="changeColor(1)">黒</button>
+      <button @click="changeColor(2)">青</button>
+      <button @click="changeColor(3)">黄</button>
+      <button @click="changeColor(4)">赤</button>
+
+      <button @click="download()">ダウンロード</button>
+      <!-- <a id="download" v-bind:href="base64" download="canvas.jpg">ダウンロード</a> -->
     </div>
   </div>
   
@@ -36,43 +39,50 @@
   <!-- <script src="/main.js"></script> -->
 
   <script>
+    // https://socket.io/demos/whiteboard/
+    // https://github.com/socketio/socket.io/tree/master/examples/whiteboard
+
     var socket = io()
 
     var app = new Vue({
       el: '#app',
       data: {
         canvas: '',
-        colors: '',
+        // colors: '',
         context: '',
-        current: '',
-        drawing: false,
-        line_width: 9
+        current: {
+          color: {
+            rgba: '',
+            r: 68,
+            g: 68,
+            b: 68,
+            a: 0.95
+          },
+          line_width: 12
+        },
+        drawing: false
       },
       mounted() {
         this.canvas = document.getElementsByClassName('whiteboard')[0]
         this.context = this.canvas.getContext('2d')
         // this.context = this.$el.getContext('2d')
-        this.colors = document.getElementsByClassName('color')
-        this.current = {
-          color: 'black'
-        }
-        this.drawing = false
 
+        // ペン、黒で初期設定
+        this.tool(1)
+        this.changeColor(1)
+
+        this.drawing = false
 
         this.canvas.addEventListener('mousedown', this.onMouseDown, false)
         this.canvas.addEventListener('mouseup', this.onMouseUp, false)
         this.canvas.addEventListener('mouseout', this.onMouseUp, false)
         this.canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 0), false)
 
-        //Touch support for mobile devices
+        // Touch support for mobile devices
         this.canvas.addEventListener('touchstart', this.onMouseDown, false)
         this.canvas.addEventListener('touchend', this.onMouseUp, false)
         this.canvas.addEventListener('touchcancel', this.onMouseUp, false)
         this.canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 0), false)
-
-        for (var i = 0; i < this.colors.length; i++) {
-          this.colors[i].addEventListener('click', this.onColorUpdate, false)
-        }
 
         socket.on('drawing', this.onDrawingEvent)
 
@@ -81,19 +91,25 @@
       },
       methods: {
         drawLine(x0, y0, x1, y1, color, emit) {
-          // this.context.globalAlpha = 0.5
-          // this.context.strokeStyle = color
-
-          this.context.strokeStyle = 'rgba(0, 0, 255, 0.2)'
-          // this.context.fillStyle = 'rgba(0, 0, 255, 0.2)'
-
+          this.context.lineWidth = this.current.line_width
+          this.context.strokeStyle = color
+          // this.context.shadowBlur = 1
+          // this.context.shadowColor = color
           this.context.lineCap = 'round'
           this.context.lineJoin = 'round'
-          
-          this.context.lineWidth = this.line_width
 
           this.context.beginPath()
           this.context.moveTo(x0, y0)
+
+          // for (var i = 1, len = points.length; i < len; i++) {
+          //   // we pick the point between pi+1 & pi+2 as the
+          //   // end point and p1 as our control point
+          //   var midPoint = midPointBtw(p1, p2);
+          //   ctx.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
+          //   p1 = points[i];
+          //   p2 = points[i + 1];
+          // }
+
           this.context.lineTo(x1, y1)
           this.context.stroke()
           this.context.closePath()
@@ -118,18 +134,18 @@
         onMouseUp(e) {
           if (!this.drawing) { return }
           this.drawing = false
-          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color, true)
+          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color.rgba, true)
         },
         onMouseMove(e) {
           if (!this.drawing) { return }
-          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color, true)
+          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color.rgba, true)
           this.current.x = e.clientX || e.touches[0].clientX
           this.current.y = e.clientY || e.touches[0].clientY
         },
-        onColorUpdate(e) {
-          console.log(e.target.className)
-          this.current.color = e.target.className.split(' ')[1]
-        },
+        // onColorUpdate(e) {
+        //   console.log(e.target.className)
+        //   this.current.color = e.target.className.split(' ')[1]
+        // },
         throttle(callback, delay) {
           var previousCall = new Date().getTime()
           return function () {
@@ -150,15 +166,28 @@
           this.canvas.width = window.innerWidth
           this.canvas.height = window.innerHeight
         },
-        tool(btnNum) {
-          // クリックされボタンが鉛筆だったら
-          if (btnNum == 1) {
-            this.context.globalCompositeOperation = 'source-over'
-          }
-          // クリックされボタンが消しゴムだったら
-          else if (btnNum == 2) {
-            this.context.strokeStyle = 'rgba(0, 0, 0, 1.0)'
-            this.context.globalCompositeOperation = 'destination-out'
+        tool(tool) {
+          switch (tool) {
+            case 1:
+              // ペン
+              this.context.globalCompositeOperation = 'source-over'
+              this.current.color.a = 0.95
+              this.current.color.rgba = this.toRGBA()
+              break;
+            case 2:
+              // マーカー
+              this.context.globalCompositeOperation = 'source-over'
+              this.current.color.a = 0.2
+              this.current.color.rgba = this.toRGBA()
+              break;
+            case 3:
+              // 消しゴム
+              this.context.globalCompositeOperation = 'destination-out'
+              this.current.color.a = 1.0
+              this.current.color.rgba = this.toRGBA()
+              break;
+            default:
+              break;
           }
         },
         deleteCanvas() {
@@ -170,7 +199,48 @@
           // }
         },
         changeLineWidth(width) {
-          this.line_width = width
+          this.current.line_width = width
+        },
+        changeColor(color_num) {
+          switch (color_num) {
+            case 1:
+              // 黒
+              this.current.color.r = 68
+              this.current.color.g = 68
+              this.current.color.b = 68
+              break;
+            case 2:
+              // 青
+              this.current.color.r = 153
+              this.current.color.g = 221
+              this.current.color.b = 255
+              break;
+            case 3:
+              // 黄
+              this.current.color.r = 255
+              this.current.color.g = 255
+              this.current.color.b = 187
+              break;
+            case 4:
+              // 赤
+              this.current.color.r = 255
+              this.current.color.g = 187
+              this.current.color.b = 187
+              break;
+            default:
+              break;
+          }
+          this.current.color.rgba = this.toRGBA()
+        },
+        toRGBA() {
+          // rgba(0, 0, 0, 1.0)形式の文字列を返す
+          return 'rgba(' + this.current.color.r + ',' + this.current.color.g + ',' + this.current.color.b + ',' + this.current.color.a + ')'
+        },
+        download() {
+          let a = document.createElement('a')
+          a.href = this.canvas.toDataURL('image/png')
+          a.download = 'download.jpg'
+          a.click()
         }
       }
     })

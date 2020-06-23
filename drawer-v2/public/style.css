@@ -24,16 +24,17 @@ html, body {
   right: 0;
   bottom: 0;
   top: 0;
-  border: 1px solid #000;
+  border: 3px solid #55e;
 }
 
 .tool-list {
   position: absolute;
-  right: 10px;
-  bottom: 10px
+  left: 50%;
+  transform: translateX(-50%);
+  top: 5px;
 }
 
-.colors {
+/* .colors {
   position: fixed;
 }
 
@@ -47,4 +48,4 @@ html, body {
 .color.red { background-color: red; }
 .color.green { background-color: green; }
 .color.blue { background-color: blue; }
-.color.yellow { background-color: yellow; }
+.color.yellow { background-color: yellow; } */
