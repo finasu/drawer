@@ -9,8 +9,10 @@
 
 <body>
   <div id="app">
-    <canvas class="whiteboard"></canvas>
-
+    <div id="sketch">
+      <canvas class="whiteboard"></canvas>
+    </div>
+    
     <div class="tool-list">
       <button @click="changeLineWidth(3)">細</button>
       <button @click="changeLineWidth(12)">中</button>
@@ -48,119 +50,240 @@
       el: '#app',
       data: {
         canvas: '',
-        // colors: '',
         context: '',
+        tmp_canvas: '',
+        tmp_context: '',
         current: {
+          line_width: 12,
           color: {
             rgba: '',
             r: 68,
             g: 68,
             b: 68,
             a: 0.95
-          },
-          line_width: 12
+          }
         },
-        drawing: false
+        drawing: false,
+        points: []
       },
       mounted() {
         this.canvas = document.getElementsByClassName('whiteboard')[0]
         this.context = this.canvas.getContext('2d')
         // this.context = this.$el.getContext('2d')
 
-        // ペン、黒で初期設定
-        this.tool(1)
-        this.changeColor(1)
+        window.addEventListener('resize', this.onResize, false)
+        this.onResize()
+
+        const sketch = document.querySelector('#sketch')
+        // var sketch_style = getComputedStyle(sketch)
+        // this.canvas.width = parseInt(sketch_style.getPropertyValue('width'))
+        // this.canvas.height = parseInt(sketch_style.getPropertyValue('height'))
+
+        // Creating a tmp canvas
+        this.tmp_canvas = document.createElement('canvas')
+        this.tmp_context = this.tmp_canvas.getContext('2d')
+        this.tmp_canvas.classList.add('whiteboard')
+        this.tmp_canvas.width = this.canvas.width
+        this.tmp_canvas.height = this.canvas.height
+        sketch.appendChild(this.tmp_canvas)
 
         this.drawing = false
 
-        this.canvas.addEventListener('mousedown', this.onMouseDown, false)
-        this.canvas.addEventListener('mouseup', this.onMouseUp, false)
-        this.canvas.addEventListener('mouseout', this.onMouseUp, false)
-        this.canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 0), false)
+        // ペン、太さ12、黒で初期設定
+        this.tool(1)
+        this.changeLineWidth(12)
+        this.changeColor(1)
+
+        this.tmp_canvas.addEventListener('mousedown', this.onMouseDown, false)
+        this.tmp_canvas.addEventListener('mouseup', this.onMouseUp, false)
+        // this.tmp_canvas.addEventListener('mouseout', this.onMouseUp, false)
+        this.tmp_canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 20), false)
 
         // Touch support for mobile devices
-        this.canvas.addEventListener('touchstart', this.onMouseDown, false)
-        this.canvas.addEventListener('touchend', this.onMouseUp, false)
-        this.canvas.addEventListener('touchcancel', this.onMouseUp, false)
-        this.canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 0), false)
+        this.tmp_canvas.addEventListener('touchstart', this.onMouseDown, false)
+        this.tmp_canvas.addEventListener('touchend', this.onMouseUp, false)
+        // this.tmp_canvas.addEventListener('touchcancel', this.onMouseUp, false)
+        this.tmp_canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 20), false)
 
         socket.on('drawing', this.onDrawingEvent)
-
-        window.addEventListener('resize', this.onResize, false)
-        this.onResize()
+        socket.on('drawImage', this.onDrawImage)
       },
       methods: {
-        drawLine(x0, y0, x1, y1, color, emit) {
-          this.context.lineWidth = this.current.line_width
-          this.context.strokeStyle = color
-          // this.context.shadowBlur = 1
-          // this.context.shadowColor = color
-          this.context.lineCap = 'round'
-          this.context.lineJoin = 'round'
-
-          this.context.beginPath()
-          this.context.moveTo(x0, y0)
-
-          // for (var i = 1, len = points.length; i < len; i++) {
-          //   // we pick the point between pi+1 & pi+2 as the
-          //   // end point and p1 as our control point
-          //   var midPoint = midPointBtw(p1, p2);
-          //   ctx.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
-          //   p1 = points[i];
-          //   p2 = points[i + 1];
-          // }
-
-          this.context.lineTo(x1, y1)
-          this.context.stroke()
-          this.context.closePath()
-
-          if (!emit) { return }
-          var w = this.canvas.width
-          var h = this.canvas.height
-
-          socket.emit('drawing', {
-            x0: x0 / w,
-            y0: y0 / h,
-            x1: x1 / w,
-            y1: y1 / h,
-            color: color
-          })
-        },
         onMouseDown(e) {
+          // this.drawing = true
+          // this.current.x = e.clientX || e.touches[0].clientX
+          // this.current.y = e.clientY || e.touches[0].clientY
+          
           this.drawing = true
-          this.current.x = e.clientX || e.touches[0].clientX
-          this.current.y = e.clientY || e.touches[0].clientY
+
+          // 開始点を設定
+          this.points.push(
+            {
+              x: e.clientX || e.touches[0].clientX,
+              y: e.clientY || e.touches[0].clientY
+            }
+          )
         },
         onMouseUp(e) {
-          if (!this.drawing) { return }
+          // if (!this.drawing) { return }
+          // this.drawing = false
+          // this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color.rgba, true)
+          
           this.drawing = false
-          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color.rgba, true)
+          this.points.length = 0
+
+          this.doDrawImage()
+          socket.emit('drawImage', {})
+
+          // // tmp_canvasを実際のcanvasに転記
+          // this.context.drawImage(this.tmp_canvas, 0, 0)
+
+          // // tmp_canvasをクリア
+          // this.tmp_context.clearRect(0, 0, this.tmp_canvas.width, this.tmp_canvas.height)
         },
         onMouseMove(e) {
+          // if (!this.drawing) { return }
+          // this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color.rgba, true)
+          // this.current.x = e.clientX || e.touches[0].clientX
+          // this.current.y = e.clientY || e.touches[0].clientY
+          
           if (!this.drawing) { return }
-          this.drawLine(this.current.x, this.current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, this.current.color.rgba, true)
-          this.current.x = e.clientX || e.touches[0].clientX
-          this.current.y = e.clientY || e.touches[0].clientY
-        },
-        // onColorUpdate(e) {
-        //   console.log(e.target.className)
-        //   this.current.color = e.target.className.split(' ')[1]
-        // },
-        throttle(callback, delay) {
-          var previousCall = new Date().getTime()
-          return function () {
-            var time = new Date().getTime()
 
-            if ((time - previousCall) >= delay) {
+          // 線の軌跡点を設定
+          this.points.push(
+            {
+              x: e.clientX || e.touches[0].clientX,
+              y: e.clientY || e.touches[0].clientY
+            }
+          )
+          
+          // this.tmp_context.lineWidth = this.current.line_width
+          // this.tmp_context.strokeStyle = this.current.color.rgba
+          // this.tmp_context.shadowBlur = 1
+          // this.tmp_context.shadowColor = this.current.color.rgba
+          // this.tmp_context.lineCap = 'round'
+          // this.tmp_context.lineJoin = 'round'
+
+          let p1 = this.points[0]
+          let p2 = this.points[1]
+
+          this.drawLine(p1, p2, this.points, this.current.color.rgba, true)
+
+          // // tmp_canvasをクリア
+          // this.tmp_context.clearRect(0, 0, this.tmp_context.canvas.width, this.tmp_context.canvas.height)
+
+          // this.tmp_context.beginPath()
+          // this.tmp_context.moveTo(p1.x, p1.y)
+
+          // for (let i = 1, len = this.points.length; i < len; i++) {
+          //   console.log(i)
+          //   // we pick the point between pi+1 & pi+2 as the
+          //   // end point and p1 as our control point
+          //   let midPoint = this.midPointBtw(p1, p2)
+          //   this.tmp_context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
+          //   p1 = this.points[i]
+          //   p2 = this.points[i + 1]
+          // }
+          // // Draw last line as a straight line while
+          // // we wait for the next point to be able to calculate
+          // // the bezier control point
+          // this.tmp_context.lineTo(p1.x, p1.y)
+          // this.tmp_context.stroke()
+        },
+        throttle(callback, delay) {
+          let previousCall = new Date().getTime()
+          return function () {
+            const time = new Date().getTime()
+
+            if((time - previousCall) >= delay) {
               previousCall = time
               callback.apply(null, arguments)
             }
           }
         },
+        drawLine(p1, p2, points, color, emit) {
+          const p1_emit = p1
+          const p2_emit = p2
+
+          this.tmp_context.lineWidth = this.current.line_width
+          this.tmp_context.strokeStyle = this.current.color.rgba
+          this.tmp_context.shadowBlur = 1
+          this.tmp_context.shadowColor = this.current.color.rgba
+          this.tmp_context.lineCap = 'round'
+          this.tmp_context.lineJoin = 'round'
+          
+          // tmp_canvasをクリア
+          this.tmp_context.clearRect(0, 0, this.tmp_context.canvas.width, this.tmp_context.canvas.height)
+
+          this.tmp_context.beginPath()
+          this.tmp_context.moveTo(p1.x, p1.y)
+
+          for (let i = 1; i < points.length; i++) {
+            // we pick the point between pi+1 & pi+2 as the
+            // end point and p1 as our control point
+            let midPoint = this.midPointBtw(p1, p2)
+            this.tmp_context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
+            p1 = points[i]
+            p2 = points[i + 1]
+          }
+          // Draw last line as a straight line while
+          // we wait for the next point to be able to calculate
+          // the bezier control point
+          this.tmp_context.lineTo(p1.x, p1.y)
+          this.tmp_context.stroke()
+
+          // emitしない（false）場合はここで終了
+          if (!emit) { return }
+
+          socket.emit('drawing', {
+            p1: p1_emit,
+            p2: p2_emit,
+            points: points,
+            color: color
+          })
+        },
+        // drawLine(x0, y0, x1, y1, color, emit) {
+        //   this.context.lineWidth = this.current.line_width
+        //   this.context.strokeStyle = color
+        //   // this.context.shadowBlur = 1
+        //   // this.context.shadowColor = color
+        //   this.context.lineCap = 'round'
+        //   this.context.lineJoin = 'round'
+
+        //   this.context.beginPath()
+        //   this.context.moveTo(x0, y0)
+        //   this.context.lineTo(x1, y1)
+        //   this.context.stroke()
+        //   this.context.closePath()
+
+        //   if (!emit) { return }
+        //   var w = this.canvas.width
+        //   var h = this.canvas.height
+
+        //   socket.emit('drawing', {
+        //     x0: x0 / w,
+        //     y0: y0 / h,
+        //     x1: x1 / w,
+        //     y1: y1 / h,
+        //     color: color
+        //   })
+        // },
+        doDrawImage() {
+          // tmp_canvasを実際のcanvasに転記
+          this.context.drawImage(this.tmp_canvas, 0, 0)
+
+          // tmp_canvasをクリア
+          this.tmp_context.clearRect(0, 0, this.tmp_canvas.width, this.tmp_canvas.height)
+        },
         onDrawingEvent(data) {
-          var w = this.canvas.width
-          var h = this.canvas.height
-          this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color)
+          // console.log(data)
+          const w = this.canvas.width
+          const h = this.canvas.height
+          // this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color)
+          this.drawLine(data.p1, data.p2, data.points, data.color, false)
+        },
+        onDrawImage(data){
+          this.doDrawImage()
         },
         onResize() {
           this.canvas.width = window.innerWidth
@@ -170,29 +293,29 @@
           switch (tool) {
             case 1:
               // ペン
-              this.context.globalCompositeOperation = 'source-over'
+              this.tmp_context.globalCompositeOperation = 'source-over'
               this.current.color.a = 0.95
               this.current.color.rgba = this.toRGBA()
-              break;
+              break
             case 2:
               // マーカー
-              this.context.globalCompositeOperation = 'source-over'
+              this.tmp_context.globalCompositeOperation = 'source-over'
               this.current.color.a = 0.2
               this.current.color.rgba = this.toRGBA()
-              break;
+              break
             case 3:
               // 消しゴム
               this.context.globalCompositeOperation = 'destination-out'
               this.current.color.a = 1.0
               this.current.color.rgba = this.toRGBA()
-              break;
+              break
             default:
-              break;
+              break
           }
         },
         deleteCanvas() {
           this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
-          // confirm = confirm('canvasの内容を削除しますか？');
+          // confirm = confirm('canvasの内容を削除しますか？')
           // // アラートで「OK」を選んだ時
           // if (confirm === true) {
           //   this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -208,27 +331,27 @@
               this.current.color.r = 68
               this.current.color.g = 68
               this.current.color.b = 68
-              break;
+              break
             case 2:
               // 青
               this.current.color.r = 153
               this.current.color.g = 221
               this.current.color.b = 255
-              break;
+              break
             case 3:
               // 黄
               this.current.color.r = 255
               this.current.color.g = 255
               this.current.color.b = 187
-              break;
+              break
             case 4:
               // 赤
               this.current.color.r = 255
               this.current.color.g = 187
               this.current.color.b = 187
-              break;
+              break
             default:
-              break;
+              break
           }
           this.current.color.rgba = this.toRGBA()
         },
@@ -241,6 +364,13 @@
           a.href = this.canvas.toDataURL('image/png')
           a.download = 'download.jpg'
           a.click()
+        },
+        // http://perfectionkills.com/exploring-canvas-drawing-techniques/#bezier-curves
+        midPointBtw(p1, p2) {
+          return {
+            x: p1.x + (p2.x - p1.x) / 2,
+            y: p1.y + (p2.y - p1.y) / 2
+          }
         }
       }
     })

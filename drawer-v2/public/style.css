@@ -1,6 +1,4 @@
-/**
- * Fix user-agent
- */
+/* Fix user-agent */
 
 * {
   box-sizing: border-box;
@@ -12,9 +10,8 @@ html, body {
   padding: 0;
 }
 
-/**
- * Canvas
- */
+
+/* Canvas */
 
 .whiteboard {
   height: 100%;
@@ -33,19 +30,3 @@ html, body {
   transform: translateX(-50%);
   top: 5px;
 }
-
-/* .colors {
-  position: fixed;
-}
-
-.color {
-  display: inline-block;
-  height: 48px;
-  width: 48px;
-}
-
-.color.black { background-color: black; }
-.color.red { background-color: red; }
-.color.green { background-color: green; }
-.color.blue { background-color: blue; }
-.color.yellow { background-color: yellow; } */
