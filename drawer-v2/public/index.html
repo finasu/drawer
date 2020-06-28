@@ -61,7 +61,8 @@
             g: 68,
             b: 68,
             a: 0.95
-          }
+          },
+          tool: ''
         },
         drawing: false,
         points: []
@@ -94,6 +95,13 @@
         this.changeLineWidth(12)
         this.changeColor(1)
 
+        // 線の設定（固定値のもの）
+        this.context.lineCap = 'round'
+        this.context.lineJoin = 'round'
+        this.tmp_context.shadowBlur = 1
+        this.tmp_context.lineCap = 'round'
+        this.tmp_context.lineJoin = 'round'
+
         this.tmp_canvas.addEventListener('mousedown', this.onMouseDown, false)
         this.tmp_canvas.addEventListener('mouseup', this.onMouseUp, false)
         // this.tmp_canvas.addEventListener('mouseout', this.onMouseUp, false)
@@ -106,6 +114,7 @@
         this.tmp_canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 20), false)
 
         socket.on('drawing', this.onDrawingEvent)
+        socket.on('erasing', this.onErasingEvent)
         socket.on('drawImage', this.onDrawImage)
       },
       methods: {
@@ -132,8 +141,13 @@
           this.drawing = false
           this.points.length = 0
 
-          this.doDrawImage()
-          socket.emit('drawImage', {})
+
+          if (this.current.tool === 3) {
+            // 消しゴムの場合
+          } else {
+            this.doDrawImage()
+            socket.emit('drawImage', {})
+          }
 
           // // tmp_canvasを実際のcanvasに転記
           // this.context.drawImage(this.tmp_canvas, 0, 0)
@@ -156,39 +170,17 @@
               y: e.clientY || e.touches[0].clientY
             }
           )
-          
-          // this.tmp_context.lineWidth = this.current.line_width
-          // this.tmp_context.strokeStyle = this.current.color.rgba
-          // this.tmp_context.shadowBlur = 1
-          // this.tmp_context.shadowColor = this.current.color.rgba
-          // this.tmp_context.lineCap = 'round'
-          // this.tmp_context.lineJoin = 'round'
 
+          // これはdrawLineのなかでやっていい処理かも、そうすればdrawLineにはpointsだけ渡せば良くなる（p1, p2を渡す必要がない）
           let p1 = this.points[0]
           let p2 = this.points[1]
 
-          this.drawLine(p1, p2, this.points, this.current.color.rgba, true)
-
-          // // tmp_canvasをクリア
-          // this.tmp_context.clearRect(0, 0, this.tmp_context.canvas.width, this.tmp_context.canvas.height)
-
-          // this.tmp_context.beginPath()
-          // this.tmp_context.moveTo(p1.x, p1.y)
-
-          // for (let i = 1, len = this.points.length; i < len; i++) {
-          //   console.log(i)
-          //   // we pick the point between pi+1 & pi+2 as the
-          //   // end point and p1 as our control point
-          //   let midPoint = this.midPointBtw(p1, p2)
-          //   this.tmp_context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
-          //   p1 = this.points[i]
-          //   p2 = this.points[i + 1]
-          // }
-          // // Draw last line as a straight line while
-          // // we wait for the next point to be able to calculate
-          // // the bezier control point
-          // this.tmp_context.lineTo(p1.x, p1.y)
-          // this.tmp_context.stroke()
+          if(this.current.tool === 3) {
+            // 消しゴムの場合
+            this.eraseLine(p1, p2, this.points, this.current.line_width, this.current.color.rgba, true)
+          } else {
+            this.drawLine(p1, p2, this.points, this.current.line_width, this.current.color.rgba, true)
+          }
         },
         throttle(callback, delay) {
           let previousCall = new Date().getTime()
@@ -201,16 +193,19 @@
             }
           }
         },
-        drawLine(p1, p2, points, color, emit) {
+        drawLine(p1, p2, points, width, color, emit) {
+          // ここを参考にquadraticCurveToでスムーズなラインを実装
+          // http://perfectionkills.com/exploring-canvas-drawing-techniques/#bezier-curves
+
           const p1_emit = p1
           const p2_emit = p2
 
-          this.tmp_context.lineWidth = this.current.line_width
-          this.tmp_context.strokeStyle = this.current.color.rgba
-          this.tmp_context.shadowBlur = 1
-          this.tmp_context.shadowColor = this.current.color.rgba
-          this.tmp_context.lineCap = 'round'
-          this.tmp_context.lineJoin = 'round'
+          // this.tmp_context.lineWidth = this.current.line_width
+          this.tmp_context.lineWidth = width
+          // this.tmp_context.strokeStyle = this.current.color.rgba
+          this.tmp_context.strokeStyle = color
+          // this.tmp_context.shadowColor = this.current.color.rgba
+          this.tmp_context.shadowColor = color
           
           // tmp_canvasをクリア
           this.tmp_context.clearRect(0, 0, this.tmp_context.canvas.width, this.tmp_context.canvas.height)
@@ -235,10 +230,58 @@
           // emitしない（false）場合はここで終了
           if (!emit) { return }
 
+          const w = this.canvas.width
+          const h = this.canvas.height
+
+          // p1_emit.x = Number(p1_emit.x) / w
+          // p1_emit.y = Number(p1_emit.y) / h
+          // p2_emit.x = Number(p2_emit.x) / w
+          // p2_emit.y = Number(p2_emit.y) / h
+          // const points_adjusted = points.map(p => ({
+          //   x: p.x / w,
+          //   y: p.y / h
+          // }))
+
           socket.emit('drawing', {
             p1: p1_emit,
             p2: p2_emit,
             points: points,
+            width: width,
+            color: color
+          })
+        },
+        eraseLine(p1, p2, points, width, color, emit) {
+          const p1_emit = p1
+          const p2_emit = p2
+
+          this.context.lineWidth = width
+          this.context.strokeStyle = color
+
+          this.context.beginPath()
+          this.context.moveTo(p1.x, p1.y)
+
+          for (let i = 1; i < points.length; i++) {
+            // we pick the point between pi+1 & pi+2 as the
+            // end point and p1 as our control point
+            let midPoint = this.midPointBtw(p1, p2)
+            this.context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
+            p1 = points[i]
+            p2 = points[i + 1]
+          }
+          // Draw last line as a straight line while
+          // we wait for the next point to be able to calculate
+          // the bezier control point
+          this.context.lineTo(p1.x, p1.y)
+          this.context.stroke()
+
+          // emitしない（false）場合はここで終了
+          if (!emit) { return }
+
+          socket.emit('erasing', {
+            p1: p1_emit,
+            p2: p2_emit,
+            points: points,
+            width: width,
             color: color
           })
         },
@@ -276,11 +319,28 @@
           this.tmp_context.clearRect(0, 0, this.tmp_canvas.width, this.tmp_canvas.height)
         },
         onDrawingEvent(data) {
-          // console.log(data)
+          this.tmp_context.globalCompositeOperation = 'source-over'
+          this.context.globalCompositeOperation = 'source-over'
+          
           const w = this.canvas.width
           const h = this.canvas.height
+
+          // data.p1.x = data.p1.x * w
+          // data.p1.y = data.p1.y * h
+          // data.p2.x = data.p2.x * w
+          // data.p2.y = data.p2.y * h
+          // const points_adjusted = data.points.map(p => ({
+          //   x: p.x * w,
+          //   y: p.y * h
+          // }))
+
           // this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color)
-          this.drawLine(data.p1, data.p2, data.points, data.color, false)
+          this.drawLine(data.p1, data.p2, data.points, data.width, data.color, false)
+        },
+        onErasingEvent(data) {
+          this.context.globalCompositeOperation = 'destination-out'
+
+          this.eraseLine(data.p1, data.p2, data.points, data.width, data.color, false)
         },
         onDrawImage(data){
           this.doDrawImage()
@@ -290,21 +350,26 @@
           this.canvas.height = window.innerHeight
         },
         tool(tool) {
+          this.current.tool = tool
           switch (tool) {
             case 1:
               // ペン
               this.tmp_context.globalCompositeOperation = 'source-over'
+              this.context.globalCompositeOperation = 'source-over'
               this.current.color.a = 0.95
               this.current.color.rgba = this.toRGBA()
               break
             case 2:
               // マーカー
               this.tmp_context.globalCompositeOperation = 'source-over'
+              this.context.globalCompositeOperation = 'source-over'
               this.current.color.a = 0.2
               this.current.color.rgba = this.toRGBA()
               break
             case 3:
               // 消しゴム
+              // 複数ウィンドウで同時描画するときに、ペン使用中に相手が消しゴムに切り替えて線が消える、ということがあるかもしれない
+              this.tmp_context.globalCompositeOperation = 'destination-out'
               this.context.globalCompositeOperation = 'destination-out'
               this.current.color.a = 1.0
               this.current.color.rgba = this.toRGBA()
