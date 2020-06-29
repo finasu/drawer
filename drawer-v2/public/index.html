@@ -144,6 +144,7 @@
 
           if (this.current.tool === 3) {
             // 消しゴムの場合
+            
           } else {
             this.doDrawImage()
             socket.emit('drawImage', {})
@@ -171,15 +172,17 @@
             }
           )
 
-          // これはdrawLineのなかでやっていい処理かも、そうすればdrawLineにはpointsだけ渡せば良くなる（p1, p2を渡す必要がない）
-          let p1 = this.points[0]
-          let p2 = this.points[1]
+          // // これはdrawLineのなかでやっていい処理かも、そうすればdrawLineにはpointsだけ渡せば良くなる（p1, p2を渡す必要がない）
+          // let p1 = this.points[0]
+          // let p2 = this.points[1]
 
           if(this.current.tool === 3) {
             // 消しゴムの場合
-            this.eraseLine(p1, p2, this.points, this.current.line_width, this.current.color.rgba, true)
+            // this.eraseLine(p1, p2, this.points, this.current.line_width, this.current.color.rgba, true)
+            this.eraseLine(this.points, this.current.line_width, this.current.color.rgba, true)
           } else {
-            this.drawLine(p1, p2, this.points, this.current.line_width, this.current.color.rgba, true)
+            // this.drawLine(p1, p2, this.points, this.current.line_width, this.current.color.rgba, true)
+            this.drawLine(this.points, this.current.line_width, this.current.color.rgba, true)
           }
         },
         throttle(callback, delay) {
@@ -193,9 +196,12 @@
             }
           }
         },
-        drawLine(p1, p2, points, width, color, emit) {
+        drawLine(points, width, color, emit) {
           // ここを参考にquadraticCurveToでスムーズなラインを実装
           // http://perfectionkills.com/exploring-canvas-drawing-techniques/#bezier-curves
+
+          let p1 = points[0]
+          let p2 = points[1]
 
           const p1_emit = p1
           const p2_emit = p2
@@ -242,15 +248,23 @@
           //   y: p.y / h
           // }))
 
+          // socket.emit('drawing', {
+          //   p1: p1_emit,
+          //   p2: p2_emit,
+          //   points: points,
+          //   width: width,
+          //   color: color
+          // })
           socket.emit('drawing', {
-            p1: p1_emit,
-            p2: p2_emit,
             points: points,
             width: width,
             color: color
           })
         },
-        eraseLine(p1, p2, points, width, color, emit) {
+        eraseLine(points, width, color, emit) {
+          let p1 = points[0]
+          let p2 = points[1]
+
           const p1_emit = p1
           const p2_emit = p2
 
@@ -277,9 +291,14 @@
           // emitしない（false）場合はここで終了
           if (!emit) { return }
 
+          // socket.emit('erasing', {
+          //   p1: p1_emit,
+          //   p2: p2_emit,
+          //   points: points,
+          //   width: width,
+          //   color: color
+          // })
           socket.emit('erasing', {
-            p1: p1_emit,
-            p2: p2_emit,
             points: points,
             width: width,
             color: color
@@ -321,7 +340,7 @@
         onDrawingEvent(data) {
           this.tmp_context.globalCompositeOperation = 'source-over'
           this.context.globalCompositeOperation = 'source-over'
-          
+
           const w = this.canvas.width
           const h = this.canvas.height
 
@@ -335,12 +354,14 @@
           // }))
 
           // this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color)
-          this.drawLine(data.p1, data.p2, data.points, data.width, data.color, false)
+          // this.drawLine(data.p1, data.p2, data.points, data.width, data.color, false)
+          this.drawLine(data.points, data.width, data.color, false)
         },
         onErasingEvent(data) {
           this.context.globalCompositeOperation = 'destination-out'
 
-          this.eraseLine(data.p1, data.p2, data.points, data.width, data.color, false)
+          // this.eraseLine(data.p1, data.p2, data.points, data.width, data.color, false)
+          this.eraseLine(data.points, data.width, data.color, false)
         },
         onDrawImage(data){
           this.doDrawImage()
@@ -363,7 +384,7 @@
               // マーカー
               this.tmp_context.globalCompositeOperation = 'source-over'
               this.context.globalCompositeOperation = 'source-over'
-              this.current.color.a = 0.2
+              this.current.color.a = 0.3
               this.current.color.rgba = this.toRGBA()
               break
             case 3:
