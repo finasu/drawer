@@ -33,6 +33,9 @@
       <button @click="download()">ダウンロード</button>
       <!-- <a id="download" v-bind:href="base64" download="canvas.jpg">ダウンロード</a> -->
     </div>
+
+    <!-- マウスストーカー -->
+    <div id="stalker"></div>
   </div>
   
 
@@ -53,18 +56,18 @@
         context: '',
         tmp_canvas: '',
         tmp_context: '',
+        drawing: false,
         current: {
-          line_width: 12,
+          tool: '',
+          line_width: 0,
           color: {
             rgba: '',
-            r: 68,
-            g: 68,
-            b: 68,
-            a: 0.95
-          },
-          tool: ''
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 0
+          }
         },
-        drawing: false,
         points: []
       },
       mounted() {
@@ -105,17 +108,25 @@
         this.tmp_canvas.addEventListener('mousedown', this.onMouseDown, false)
         this.tmp_canvas.addEventListener('mouseup', this.onMouseUp, false)
         // this.tmp_canvas.addEventListener('mouseout', this.onMouseUp, false)
-        this.tmp_canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 20), false)
+        this.tmp_canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 25), false)
 
         // Touch support for mobile devices
         this.tmp_canvas.addEventListener('touchstart', this.onMouseDown, false)
         this.tmp_canvas.addEventListener('touchend', this.onMouseUp, false)
         // this.tmp_canvas.addEventListener('touchcancel', this.onMouseUp, false)
-        this.tmp_canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 20), false)
+        this.tmp_canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 25), false)
 
         socket.on('drawing', this.onDrawingEvent)
         socket.on('erasing', this.onErasingEvent)
         socket.on('drawImage', this.onDrawImage)
+
+        // https://wemo.tech/3214
+        //マウスストーカー用のdivを取得
+        const stalker = document.getElementById('stalker')
+        //上記のdivタグをマウスに追従させる処理
+        document.addEventListener('mousemove', function(e) {
+          stalker.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)'
+        })
       },
       methods: {
         onMouseDown(e) {
@@ -203,8 +214,8 @@
           let p1 = points[0]
           let p2 = points[1]
 
-          const p1_emit = p1
-          const p2_emit = p2
+          // const p1_emit = p1
+          // const p2_emit = p2
 
           // this.tmp_context.lineWidth = this.current.line_width
           this.tmp_context.lineWidth = width
@@ -265,8 +276,8 @@
           let p1 = points[0]
           let p2 = points[1]
 
-          const p1_emit = p1
-          const p2_emit = p2
+          // const p1_emit = p1
+          // const p2_emit = p2
 
           this.context.lineWidth = width
           this.context.strokeStyle = color
@@ -409,6 +420,13 @@
         },
         changeLineWidth(width) {
           this.current.line_width = width
+
+          // マウスストーカーの直径を線幅に合わせ、中心点を調整
+          const stalker = document.getElementById('stalker')
+          stalker.style.width = this.current.line_width + 'px'
+          stalker.style.height = this.current.line_width + 'px'
+          stalker.style.top = -1 * this.current.line_width / 2 + 'px'
+          stalker.style.left = -1 * this.current.line_width / 2 + 'px'
         },
         changeColor(color_num) {
           switch (color_num) {
