@@ -7,13 +7,35 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(__dirname + '/public'));
 
-function onConnection(socket) {
-  socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
-  socket.on('erasing', (data) => socket.broadcast.emit('erasing', data));
-  socket.on('drawImage', (data) => socket.broadcast.emit('drawImage', data));
-}
+// function onConnection(socket) {
+//   socket.on('init', (data) => {
+//     socket.join(data.room_id);
+//   });
+//   socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
+//   socket.on('erasing', (data) => socket.broadcast.emit('erasing', data));
+//   socket.on('drawImage', (data) => socket.broadcast.emit('drawImage', data));
+//   socket.join('some_room');
+// }
 
-io.on('connection', onConnection);
+// io.on('connection', onConnection);
+  
+io.on('connection', socket => {
+  socket.on('join', (data) => {
+    socket.join(data.room_id);
+    socket.to(data.room_id).emit('join', 'xxさんが参加しました'));
+  });
+
+  // socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
+  socket.on('drawing', (data) => socket.to(data.room_id).emit('drawing', data));
+  // socket.on('erasing', (data) => socket.broadcast.emit('erasing', data));
+  socket.on('erasing', (data) => socket.to(data.room_id).emit('erasing', data));
+  // socket.on('drawImage', (data) => socket.broadcast.emit('drawImage', data));
+  socket.on('drawImage', (data) => socket.to(data.room_id).emit('drawImage', data));
+
+  socket.on('disconnect', () => {
+    socket.leave('some_room');
+  });
+});
 
 
 http.listen(port, () => console.log('listening on port ' + port));

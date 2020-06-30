@@ -33,11 +33,6 @@
 
       <button @click="download()">ダウンロード</button>
       <!-- <a id="download" v-bind:href="base64" download="canvas.jpg">ダウンロード</a> -->
-
-      <button @click="toSVG()">SVG</button>
-
-      <button @click="socketJoin()">join</button>
-      <input type="text" name="room_id" size="20" v-model="room_id">
     </div>
 
     <!-- マウスストーカー -->
@@ -75,12 +70,10 @@
             a: 0
           }
         },
-        points: [],
-        room_id: ''
+        points: []
       },
       mounted() {
         this.canvas = document.getElementsByClassName('whiteboard')[0]
-        // this.canvas = new fabric.Canvas('whiteboard', { isDrawingMode: true })
         this.context = this.canvas.getContext('2d')
 
         window.addEventListener('resize', this.onResize, false)
@@ -150,9 +143,7 @@
             // 消しゴムの場合
           } else {
             this.doDrawImage()
-            socket.emit('drawImage', {
-              room_id: this.room_id
-            })
+            socket.emit('drawImage', {})
           }
         },
         onMouseMove(e) {
@@ -224,7 +215,6 @@
           }))
 
           socket.emit('drawing', {
-            room_id: this.room_id,
             points: points_adjusted,
             width: width,
             color: color
@@ -263,7 +253,6 @@
           }))
 
           socket.emit('erasing', {
-            room_id: this.room_id,
             points: points_adjusted,
             width: width,
             color: color
@@ -402,29 +391,6 @@
           a.href = this.canvas.toDataURL('image/png')
           a.download = 'download.jpg'
           a.click()
-        },
-        socketJoin() {
-          socket.emit('join', {
-            room_id: this.room_id
-          })
-        },
-        toSVG() {
-          // let canvas = new fabric.Canvas('canvas')
-          // console.log(canvas)
-          // canvas.add(new fabric.Rect({
-          //   left: 250,
-          //   top: 250,
-          //   height: 200,
-          //   width: 200,
-          //   fill: 'green'
-          // }))
-          // console.log(canvas)
-          // console.log(canvas.toSVG())
-          // console.log(this.canvas.toSVG())
-
-          this.canvas.isDrawingMode = false
-          console.log(this.canvas)
-          console.log(this.canvas.toSVG())
         }
       }
     })
