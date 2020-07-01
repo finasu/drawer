@@ -21,8 +21,10 @@ app.use(express.static(__dirname + '/public'));
   
 io.on('connection', socket => {
   socket.on('join', (data) => {
+    socket.room_id = data.room_id;
+    // socket.name = data.name;
     socket.join(data.room_id);
-    socket.to(data.room_id).emit('join', 'xxさんが参加しました'));
+    socket.to(data.room_id).emit('message', 'xxさんが参加しました');
   });
 
   // socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
@@ -33,7 +35,8 @@ io.on('connection', socket => {
   socket.on('drawImage', (data) => socket.to(data.room_id).emit('drawImage', data));
 
   socket.on('disconnect', () => {
-    socket.leave('some_room');
+    socket.leave(socket.room_id);
+    socket.to(socket.room_id).emit('message', 'xxさんが退室しました');
   });
 });
 

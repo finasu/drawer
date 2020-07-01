@@ -26,10 +26,10 @@
 
       <button @click="deleteCanvas()">消去</button>
       
-      <button @click="changeColor(1)">黒</button>
-      <button @click="changeColor(2)">青</button>
-      <button @click="changeColor(3)">黄</button>
-      <button @click="changeColor(4)">赤</button>
+      <button @click="changeColor(68, 68, 68)">黒</button>
+      <button @click="changeColor(153, 221, 255)">青</button>
+      <button @click="changeColor(255, 255, 187)">黄</button>
+      <button @click="changeColor(255, 187, 187)">赤</button>
 
       <button @click="download()">ダウンロード</button>
       <!-- <a id="download" v-bind:href="base64" download="canvas.jpg">ダウンロード</a> -->
@@ -98,7 +98,7 @@
         // ペン、太さ12、黒で初期設定
         this.tool(1)
         this.changeLineWidth(12)
-        this.changeColor(1)
+        this.changeColor(68, 68, 68)
         this.drawing = false
 
         // 線の設定（固定値のもの）
@@ -111,17 +111,19 @@
         this.tmp_canvas.addEventListener('mousedown', this.onMouseDown, false)
         this.tmp_canvas.addEventListener('mouseup', this.onMouseUp, false)
         this.tmp_canvas.addEventListener('mouseout', this.onMouseUp, false)
-        this.tmp_canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 25), false)
+        this.tmp_canvas.addEventListener('mousemove', this.throttle(this.onMouseMove, 30), false)
 
         // Touch support for mobile devices
         this.tmp_canvas.addEventListener('touchstart', this.onMouseDown, false)
         this.tmp_canvas.addEventListener('touchend', this.onMouseUp, false)
         this.tmp_canvas.addEventListener('touchcancel', this.onMouseUp, false)
-        this.tmp_canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 25), false)
+        this.tmp_canvas.addEventListener('touchmove', this.throttle(this.onMouseMove, 30), false)
 
+        // socoket.ioからの信号を受けて、メソッドを呼ぶ
         socket.on('drawing', this.onDrawingEvent)
         socket.on('erasing', this.onErasingEvent)
         socket.on('drawImage', this.onDrawImage)
+        socket.on('message', this.socketMessage)
 
         // マウスストーカー https://wemo.tech/3214
         const stalker = document.getElementById('stalker')
@@ -362,40 +364,21 @@
           stalker.style.top = -1 * this.current.line_width / 2 + 'px'
           stalker.style.left = -1 * this.current.line_width / 2 + 'px'
         },
-        changeColor(color_num) {
-          switch (color_num) {
-            case 1:
-              // 黒
-              this.current.color.r = 68
-              this.current.color.g = 68
-              this.current.color.b = 68
-              break
-            case 2:
-              // 青
-              this.current.color.r = 153
-              this.current.color.g = 221
-              this.current.color.b = 255
-              break
-            case 3:
-              // 黄
-              this.current.color.r = 255
-              this.current.color.g = 255
-              this.current.color.b = 187
-              break
-            case 4:
-              // 赤
-              this.current.color.r = 255
-              this.current.color.g = 187
-              this.current.color.b = 187
-              break
-            default:
-              break
-          }
+        changeColor(r, g, b) {
+          this.current.color.r = r
+          this.current.color.g = g
+          this.current.color.b = b
           this.current.color.rgba = this.toRGBA()
         },
         toRGBA() {
+          const rgba = 'rgba(' + this.current.color.r + ',' + this.current.color.g + ',' + this.current.color.b + ',' + this.current.color.a + ')'
+          
+          const stalker = document.getElementById('stalker')
+          stalker.style.borderColor = rgba
+          stalker.style.backgroundColor = rgba
+
           // rgba(0, 0, 0, 1.0)形式の文字列を返す
-          return 'rgba(' + this.current.color.r + ',' + this.current.color.g + ',' + this.current.color.b + ',' + this.current.color.a + ')'
+          return rgba
         },
         download() {
           let a = document.createElement('a')
@@ -403,10 +386,14 @@
           a.download = 'download.jpg'
           a.click()
         },
-        socketJoin() {
+        socketJoin(data) {
           socket.emit('join', {
             room_id: this.room_id
+            // name: this.name
           })
+        },
+        socketMessage(data) {
+          console.log(data)
         },
         toSVG() {
           // let canvas = new fabric.Canvas('canvas')
