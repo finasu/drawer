@@ -8,7 +8,7 @@
 </head>
 
 <body>
-  <div id="app">
+  <div id="app" class="h-100-vh">
     <div id="sketch">
       <canvas class="whiteboard"></canvas>
       <canvas id="canvas" width="600" height="500"></canvas>
@@ -79,6 +79,12 @@
         room_id: ''
       },
       mounted() {
+        // https://coliss.com/articles/build-websites/operation/css/viewport-units-on-mobile.html
+        // 最初に、ビューポートの高さを取得し、0.01を掛けて1%の値を算出して、vh単位の値を取得
+        let vh = window.innerHeight * 0.01
+        // カスタム変数--vhの値をドキュメントのルートに設定
+        document.documentElement.style.setProperty('--vh', `${vh}px`)
+
         this.canvas = document.getElementsByClassName('whiteboard')[0]
         // this.canvas = new fabric.Canvas('whiteboard', { isDrawingMode: true })
         this.context = this.canvas.getContext('2d')
@@ -314,6 +320,9 @@
           this.doDrawImage()
         },
         onResize() {
+          let vh = window.innerHeight * 0.01
+          document.documentElement.style.setProperty('--vh', `${vh}px`)
+
           this.canvas.width = window.innerWidth
           this.canvas.height = window.innerHeight
         },

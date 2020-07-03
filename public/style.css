@@ -4,6 +4,12 @@ html, body {
   padding: 0;
 }
 
+.h-100-vh {
+  /* 変数をサポートしていないブラウザのフォールバック */
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
 * {
   box-sizing: border-box;
 }
