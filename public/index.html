@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <div id="app" class="hhhhhh-100-vh">
+  <div id="app" class="h-100-vh">
     <div id="sketch">
       <canvas class="whiteboard"></canvas>
     </div>
@@ -88,9 +88,6 @@
         this.canvas = document.getElementsByClassName('whiteboard')[0]
         // this.canvas = new fabric.Canvas('whiteboard', { isDrawingMode: true })
         this.context = this.canvas.getContext('2d')
-
-        // window.addEventListener('resize', this.onResize, false)
-        // this.onResize()
 
         // Creating a tmp canvas
         this.tmp_canvas = document.createElement('canvas')
