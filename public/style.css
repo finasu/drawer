@@ -2,6 +2,7 @@ html, body {
   height: 80%;
   margin: 0;
   padding: 0;
+  overscroll-behavior: none;
 }
 
 /* .h-100-vh {
