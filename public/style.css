@@ -8,6 +8,8 @@ html, body {
   right: 0;
   bottom: 0;
   left: 0;
+  /* iOS以外はこれで対応できるらしい */
+  /* overscroll-behavior: none; */
 }
 
 /* .h-100-vh {
