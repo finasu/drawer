@@ -2,7 +2,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  /* overscroll-behavior: none; */
+  /* ↓ safariなどで画面外にスクロールしたビヨヨンとした動きをさせない（ラバーバンド効果の停止） */
   position: fixed;
   top: 0;
   right: 0;
@@ -31,7 +31,7 @@ html, body {
   right: 0;
   bottom: 0;
   top: 0;
-  /* border: 3px solid #55e; */
+  border: 3px solid #55e;
 }
 
 .tool-list {
