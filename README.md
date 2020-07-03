@@ -52,4 +52,7 @@ $ git push heroku master
 
 このアプリの場合次のURLでアクセス
 https://enigmatic-ridge-45320.herokuapp.com/
+
+変更を反映させるときはgitコミットしてから
+$ git push heroku master
 ```
