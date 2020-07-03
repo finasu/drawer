@@ -1,5 +1,5 @@
 html, body {
-  height: 50%;
+  height: 80%;
   margin: 0;
   padding: 0;
 }
@@ -18,8 +18,8 @@ html, body {
 /* Canvas */
 
 .whiteboard {
-  height: 50%;
-  width: 50%;
+  height: 80%;
+  width: 100%;
   position: absolute;
   left: 0;
   right: 0;
