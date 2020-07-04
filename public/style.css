@@ -24,6 +24,7 @@ html, body {
 }
 
 .tool-list {
+  position: relative;
   /* position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -41,6 +42,24 @@ html, body {
 
 .inline-block {
   display: inline-block;
+}
+
+.color-circle {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+}
+.color-black {
+  background-color: rgb(68, 68, 68);
+}
+.color-blue {
+  background-color: rgb(153, 221, 255);
+}
+.color-yellow {
+  background-color: rgb(255, 255, 187);
+}
+.color-red {
+  background-color: rgb(255, 187, 187);
 }
 
 .pen-width-box {
@@ -66,24 +85,6 @@ html, body {
   width: 24px;
   border-radius: 50%;
   background-color: rgb(68, 68, 68);
-}
-
-.color-circle {
-  height: 24px;
-  width: 24px;
-  border-radius: 50%;
-}
-.color-black {
-  background-color: rgb(68, 68, 68);
-}
-.color-blue {
-  background-color: rgb(153, 221, 255);
-}
-.color-yellow {
-  background-color: rgb(255, 255, 187);
-}
-.color-red {
-  background-color: rgb(255, 187, 187);
 }
 
 .room {
