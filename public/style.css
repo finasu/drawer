@@ -24,10 +24,12 @@ html, body {
 }
 
 .tool-list {
-  position: absolute;
+  /* position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 5px;
+  top: 5px; */
+  margin-top: 5px;
+  text-align: center;
 }
 
 .center {
