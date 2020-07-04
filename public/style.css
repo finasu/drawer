@@ -23,6 +23,11 @@ html, body {
   box-sizing: border-box;
 }
 
+button {
+  font-size: 16px;
+  transform: scale(calc(13 / 16));
+}
+
 
 /* Canvas */
 
