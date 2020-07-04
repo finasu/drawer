@@ -25,7 +25,6 @@ html, body {
 
 button {
   font-size: 16px;
-  transform: scale(calc(13 / 16));
 }
 
 
