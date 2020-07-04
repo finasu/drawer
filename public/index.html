@@ -105,7 +105,7 @@
     </div>
 
     <!-- マウスストーカー -->
-    <div id="stalker"></div>
+    <!-- <div id="stalker"></div> -->
   </div>
   
 
@@ -197,10 +197,10 @@
         socket.on('message', this.socketMessage)
 
         // マウスストーカー https://wemo.tech/3214
-        const stalker = document.getElementById('stalker')
-        document.addEventListener('mousemove', function(e) {
-          stalker.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)'
-        })
+        // const stalker = document.getElementById('stalker')
+        // document.addEventListener('mousemove', function(e) {
+        //   stalker.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)'
+        // })
       },
       methods: {
         onMouseDown(e) {
@@ -434,11 +434,11 @@
           this.current.line_width = width
 
           // マウスストーカーの直径を線幅に合わせ、中心点を調整
-          const stalker = document.getElementById('stalker')
-          stalker.style.width = this.current.line_width + 'px'
-          stalker.style.height = this.current.line_width + 'px'
-          stalker.style.top = -1 * this.current.line_width / 2 + 'px'
-          stalker.style.left = -1 * this.current.line_width / 2 + 'px'
+          // const stalker = document.getElementById('stalker')
+          // stalker.style.width = this.current.line_width + 'px'
+          // stalker.style.height = this.current.line_width + 'px'
+          // stalker.style.top = -1 * this.current.line_width / 2 + 'px'
+          // stalker.style.left = -1 * this.current.line_width / 2 + 'px'
         },
         changeColor(r, g, b) {
           this.current.color.r = r
@@ -449,9 +449,9 @@
         toRGBA() {
           const rgba = 'rgba(' + this.current.color.r + ',' + this.current.color.g + ',' + this.current.color.b + ',' + this.current.color.a + ')'
           
-          const stalker = document.getElementById('stalker')
-          stalker.style.borderColor = rgba
-          stalker.style.backgroundColor = rgba
+          // const stalker = document.getElementById('stalker')
+          // stalker.style.borderColor = rgba
+          // stalker.style.backgroundColor = rgba
 
           // rgba(0, 0, 0, 1.0)形式の文字列を返す
           return rgba
