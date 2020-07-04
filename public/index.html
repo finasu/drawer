@@ -15,29 +15,93 @@
     </div>
     
     <div class="tool-list">
-      <button @click="changeLineWidth(3)">細</button>
-      <button @click="changeLineWidth(12)">中</button>
-      <button @click="changeLineWidth(24)">太</button>
-      <!-- <input type="range" name="width" min="3" max="30" v-model="current.line_width"> -->
+      <!-- ペン -->
+      <div class="icon inline-block" @click="tool(1)">
+        <svg height="32" width="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="m102.7 40.773-15.473-15.473a3.057 3.057 0 0 0 -4.227 0l-5.313 5.313-34.756 34.759-4.039 4.039h-.005l-5.311 5.31a2.947 2.947 0 0 0 -.5 3.532l-9.046 23.455a1.75 1.75 0 0 0 2.262 2.262l23.443-9.034a2.948 2.948 0 0 0 3.529-.5l5.315-5.316 34.756-34.758 4.04-4.039v-.005-.005l5.325-5.313a2.991 2.991 0 0 0 0-4.227zm-10.6 9.875-14.748-14.748 1.572-1.572 14.747 14.748zm-30.711 30.712-14.748-14.748 28.236-28.237 14.748 14.748zm-4.047 4.046-14.742-14.748 1.571-1.571 14.743 14.747zm-21.624-4.294 11.17 11.17-18.174 7zm15.434 10.488-14.752-14.751 3.716-3.716 14.752 14.748zm44.994-45-14.746-14.746 3.715-3.715 14.747 14.747z" />
+        </svg>
+      </div>
 
-      <button @click="tool(1)">ペン</button>
+      <!-- マーカー -->
+      <div class="icon inline-block" @click="tool(2)">
+        <svg height="32" width="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="m98.031 39.631-20.756-15.516a1.75 1.75 0 0 0 -2.393.282l-39.058 46.95a1.75 1.75 0 0 0 .3 2.52l.345.258-1.269 1.7a7.074 7.074 0 0 0 -.545 7.6l.611 1.123a9.612 9.612 0 0 1 -.742 10.326l-4.905 6.562a1.749 1.749 0 0 0 1.4 2.8h7.7a1.747 1.747 0 0 0 1.4-.7l2.146-2.871a9.622 9.622 0 0 1 9.694-3.634l1.251.269a7.068 7.068 0 0 0 7.132-2.673l1.269-1.7.346.259a1.756 1.756 0 0 0 1.048.348 1.728 1.728 0 0 0 .295-.025 1.753 1.753 0 0 0 1.159-.751l33.978-50.752a1.748 1.748 0 0 0 -.406-2.375zm-21.52-11.718 18.089 13.526-1.88 2.809-18.371-13.737zm12.973 21.175-18.86-14.1 1.484-1.783 18.667 13.955zm-51.64 51.645h-3.334l1.769-2.366 2.138 1.6zm19.7-8.207a3.567 3.567 0 0 1 -3.594 1.347l-1.25-.273a13.125 13.125 0 0 0 -12.086 3.633l-2.335-1.746a13.129 13.129 0 0 0 .062-12.621l-.611-1.123a3.562 3.562 0 0 1 .27-3.824l1.27-1.7 19.54 14.608zm5.037-3.251-22.616-16.905-.27-.2 28.688-34.487 19.151 14.317z" />
+        </svg>
+      </div>
+
+      <!-- 消しゴム -->
+      <div class="icon inline-block" @click="tool(3)">
+        <?xml version="1.0" encoding="iso-8859-1"?>
+        <!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+        <svg height="24" width="24" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+          y="0px" viewBox="0 0 433.25 433.25" style="enable-background:new 0 0 433.25 433.25;" xml:space="preserve">
+          <g>
+            <g>
+              <path d="M418.4,192.331c19.8-19.8,19.8-51.9,0-71.7l-0.1-0.1l-78.6-78.3c-19.8-19.8-51.9-19.7-71.8,0l-169.5,169.6l-54.2,54.1
+        			c-19.8,19.7-19.8,51.8-0.1,71.6l48.3,48.3H10c-5.5,0-10,4.5-10,10s4.5,10,10,10h297.4c5.5,0,10-4.5,10-10s-4.5-10-10-10H225
+        			l23.9-23.7L418.4,192.331z M196.7,385.831h-76.1l-62.3-62.4c-12-12-11.9-31.4,0-43.4l47.1-47l122.2,122L196.7,385.831z
+        			 M119.6,218.931l162.5-162.5c12-12,31.5-12,43.5,0l78.6,78.4c12,12,12,31.4,0,43.5l-162.4,162.8L119.6,218.931z" />
+            </g>
+          </g>
+        </svg>
+      </div>      
+
+      <!-- <button @click="tool(1)">ペン</button>
       <button @click="tool(2)">マーカー</button>
-      <button @click="tool(3)">消しゴム</button>
+      <button @click="tool(3)">消しゴム</button> -->
 
-      <button @click="deleteCanvas()">消去</button>
+      <!-- クリア -->
+      <div class="icon inline-block" @click="deleteCanvas()">
+        <svg height="24" width="24" viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+          <path
+            d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+          <path
+            d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
+          <path
+            d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+        </svg>
+      </div>
+      <!-- <button @click="deleteCanvas()">消去</button> -->
+
+      <!-- 黒、青、黄、赤 -->
+      <div class="inline-block color-circle color-black" @click="changeColor(68, 68, 68)"></div>
+      <div class="inline-block color-circle color-blue" @click="changeColor(153, 221, 255)"></div>
+      <div class="inline-block color-circle color-yellow" @click="changeColor(255, 255, 187)"></div>
+      <div class="inline-block color-circle color-red" @click="changeColor(255, 187, 187)"></div>
       
-      <button @click="changeColor(68, 68, 68)">黒</button>
+      <!-- <button @click="changeColor(68, 68, 68)">黒</button>
       <button @click="changeColor(153, 221, 255)">青</button>
       <button @click="changeColor(255, 255, 187)">黄</button>
-      <button @click="changeColor(255, 187, 187)">赤</button>
+      <button @click="changeColor(255, 187, 187)">赤</button> -->
 
-      <button @click="download()">ダウンロード</button>
+      <!-- 線幅 -->
+      <div class="inline-block pen-width-box" @click="changeLineWidth(3)">
+        <div class="pen-width-s center"></div>
+      </div>
+      <div class="inline-block pen-width-box" @click="changeLineWidth(12)">
+        <div class="pen-width-m center"></div>
+      </div>
+      <div class="inline-block pen-width-box" @click="changeLineWidth(24)">
+        <div class="pen-width-l center"></div>
+      </div>
+      <!-- <button @click="changeLineWidth(3)">細</button>
+            <button @click="changeLineWidth(12)">中</button>
+            <button @click="changeLineWidth(24)">太</button> -->
+      <!-- <input type="range" name="width" min="3" max="30" v-model="current.line_width"> -->
+
+      <!-- <button @click="download()">ダウンロード</button> -->
       <!-- <a id="download" v-bind:href="base64" download="canvas.jpg">ダウンロード</a> -->
 
-      <button @click="toSVG()">SVG</button>
+      <!-- <button @click="toSVG()">SVG</button> -->
+    </div>
 
-      <button @click="socketJoin()">join</button>
+    <div class="room">
       <input type="text" size="10" v-model="room_id">
+      <button @click="socketJoin()">join</button>
     </div>
 
     <!-- マウスストーカー -->
@@ -392,12 +456,12 @@
           // rgba(0, 0, 0, 1.0)形式の文字列を返す
           return rgba
         },
-        download() {
-          let a = document.createElement('a')
-          a.href = this.canvas.toDataURL('image/png')
-          a.download = 'download.jpg'
-          a.click()
-        },
+        // download() {
+        //   let a = document.createElement('a')
+        //   a.href = this.canvas.toDataURL('image/png')
+        //   a.download = 'download.jpg'
+        //   a.click()
+        // },
         socketJoin(data) {
           socket.emit('join', {
             room_id: this.room_id
@@ -407,24 +471,24 @@
         socketMessage(data) {
           console.log(data)
         },
-        toSVG() {
-          // let canvas = new fabric.Canvas('canvas')
-          // console.log(canvas)
-          // canvas.add(new fabric.Rect({
-          //   left: 250,
-          //   top: 250,
-          //   height: 200,
-          //   width: 200,
-          //   fill: 'green'
-          // }))
-          // console.log(canvas)
-          // console.log(canvas.toSVG())
-          // console.log(this.canvas.toSVG())
+        // toSVG() {
+        //   // let canvas = new fabric.Canvas('canvas')
+        //   // console.log(canvas)
+        //   // canvas.add(new fabric.Rect({
+        //   //   left: 250,
+        //   //   top: 250,
+        //   //   height: 200,
+        //   //   width: 200,
+        //   //   fill: 'green'
+        //   // }))
+        //   // console.log(canvas)
+        //   // console.log(canvas.toSVG())
+        //   // console.log(this.canvas.toSVG())
 
-          this.canvas.isDrawingMode = false
-          console.log(this.canvas)
-          console.log(this.canvas.toSVG())
-        }
+        //   this.canvas.isDrawingMode = false
+        //   console.log(this.canvas)
+        //   console.log(this.canvas.toSVG())
+        // }
       }
     })
   </script>

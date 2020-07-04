@@ -23,8 +23,71 @@ html, body {
   box-sizing: border-box;
 }
 
-button {
-  font-size: 16px;
+.tool-list {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 5px;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.pen-width-box {
+  position: relative;
+  border: 1px solid #555;
+  height: 28px;
+  width: 28px;
+}
+.pen-width-s {
+  height: 3px;
+  width: 3px;
+  border-radius: 50%;
+  background-color: rgb(68, 68, 68);
+}
+.pen-width-m {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background-color: rgb(68, 68, 68);
+}
+.pen-width-l {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background-color: rgb(68, 68, 68);
+}
+
+.color-circle {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+}
+.color-black {
+  background-color: rgb(68, 68, 68);
+}
+.color-blue {
+  background-color: rgb(153, 221, 255);
+}
+.color-yellow {
+  background-color: rgb(255, 255, 187);
+}
+.color-red {
+  background-color: rgb(255, 187, 187);
+}
+
+.room {
+  position: absolute;
+  left: 5px;
+  top: 5px;
 }
 
 
@@ -39,13 +102,6 @@ button {
   bottom: 0;
   top: 0;
   border: 3px solid #55e;
-}
-
-.tool-list {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 5px;
 }
 
 
