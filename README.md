@@ -56,3 +56,19 @@ https://enigmatic-ridge-45320.herokuapp.com/
 変更を反映させるときはgitコミットしてから
 $ git push heroku master
 ```
+
+## メモ
+Peer.jsでボイスチャットつける？
+```
+https://peerjs.com/
+https://github.com/peers/peerjs-server
+https://qiita.com/59naga/items/e9bfab16ed66ecfb590d
+https://www.webprofessional.jp/webrtc-video-chat-application-peerjs/
+https://qiita.com/Futo_Horio/items/3f7a750e3b06cd2dfe6b
+http://front-core.github.io/ja/blog/2015/02/07/nodejs-express-socketio-webaudio/
+```
+skywayという方法もある？
+```
+https://qiita.com/ibuibu69/items/13b0edfd5d8347eac77d
+https://webrtc.ecl.ntt.com/documents/javascript-sdk.html#_1-%E6%BA%96%E5%82%99
+```
